@@ -3,8 +3,11 @@ import { Hero } from "./components/Hero";
 import { Navbar } from "./components/Navbar";
 import { About } from "./components/About";
 import { Helmet } from "react-helmet";
+import { useHeadingAnimation } from "./hooks/useHeadingAnimation";
 
 function App() {
+  useHeadingAnimation();
+
   return (
     <>
       <Helmet>
