@@ -1,18 +1,52 @@
 @import "tailwindcss";
+@plugin "flowbite/plugin";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-heading: "Oswald", sans-serif;
+  --font-paragraph: "Quicksand", sans;
+  --font-accent: "Roboto", monospace;
+
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #f7f7f7;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+.font-paragraph {
+  font-family: var(--font-paragraph);
+  font-weight: 500;
+}
+
+.font-accent {
+  font-family: var(--font-accent);
+  font-weight: 800;
+}
+
+.twentytwenty-container img {
+  object-fit: cover;
+}
+
+@layer utilities {
+  .pre-slide-h2 {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .animate-slide-in-h2 {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+    transition: all 0.7s ease-out;
+  }
 }
 
 a {
