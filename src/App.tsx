@@ -3,6 +3,7 @@ import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
 import { About } from "./components/About";
 import { Services } from "./components/Services";
+import { Gallery } from "./components/Gallery";
 import { Helmet } from "react-helmet";
 import { useHeadingAnimation } from "./hooks/useHeadingAnimation";
 
@@ -44,6 +45,8 @@ function App() {
         <About />
         {/* Services section showcasing exterior services */}
         <Services />
+        {/* Gallery section displaying work examples */}
+        <Gallery />
       </main>
     </>
   );
