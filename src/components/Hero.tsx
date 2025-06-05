@@ -73,7 +73,7 @@ export const Hero = () => {
             </span>
           </p>
 
-          <h1 className="text-sky-900 mb-4 text-7xl font-accent font-extrabold tracking-tight leading-none md:text-6xl ">
+          <h1 className=" mb-4 text-7xl font-accent font-extrabold tracking-tight leading-none md:text-6xl ">
             EXCELLENCE
             <br />
             IN EVERY DETAIL
@@ -103,12 +103,16 @@ export const Hero = () => {
                 ></path>
               </svg>
             </a>
-            <a
-              href="#get-quote"
-              className="inline-flex items-center justify-center px-5 py-3 text-base font-medium font-accent text-gray-900 border border-sky-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-sky-100 "
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById("get-quote");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="inline-flex items-center justify-center px-5 py-3 text-base font-medium font-accent "
             >
               Get a Quote
-            </a>
+            </button>
           </div>
         </div>
 
