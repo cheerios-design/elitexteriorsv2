@@ -10,6 +10,7 @@
   --button-color: oklch(39.1% 0.09 240.876);
   --button-hover-color: oklch(74.6% 0.16 232.661);
   --heading-color: oklch(39.1% 0.09 240.876);
+  --paragraph-color: oklch(44.6% 0.043 257.281);
 
   line-height: 1.5;
   font-weight: 400;
@@ -78,6 +79,17 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
   color: var(--heading-color);
+}
+
+h2 {
+  font-size: 2.4em;
+  line-height: 1.2;
+  color: var(--heading-color);
+}
+
+p {
+  line-height: 1.6;
+  color: var(--paragraph-color);
 }
 
 button {
