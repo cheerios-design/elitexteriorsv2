@@ -5,9 +5,14 @@
   --font-heading: "Oswald", sans-serif;
   --font-paragraph: "Quicksand", sans;
   --font-accent: "Roboto", monospace;
+  --link-color: oklch(39.1% 0.09 240.876);
+  --link-hover-color: oklch(74.6% 0.16 232.661);
+  --button-color: oklch(39.1% 0.09 240.876);
+  --button-hover-color: oklch(74.6% 0.16 232.661);
 
   line-height: 1.5;
   font-weight: 400;
+
   color: rgba(255, 255, 255, 0.87);
   background-color: #f7f7f7;
 
@@ -51,12 +56,13 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--link-color);
+  text-decoration: none;
+  transition: color 0.25s;
 }
 
 a:hover {
-  color: #535bf2;
+  color: var(--link-hover-color);
 }
 
 body {
@@ -79,13 +85,13 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--button-color);
   cursor: pointer;
   transition: border-color 0.25s;
 }
 
 button:hover {
-  border-color: #646cff;
+  background-color: var(--button-hover-color);
 }
 
 button:focus,

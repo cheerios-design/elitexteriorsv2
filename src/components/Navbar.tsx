@@ -1,23 +1,32 @@
 export const Navbar = () => {
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-sky-500 border-gray-200 px-4 md:px-6 py-5  filter backdrop-blur-lg shadow-lg">
+      <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-white border-gray-200 px-4 md:px-6 py-5  filter backdrop-blur-lg shadow-lg">
         <div className="flex flex-wrap justify-between items-center mx-auto max-full">
           <a href="index.html" className="flex items-center">
             <img
               src="src/assets/logos/main-logo.png"
-              className="mr-3 h-12 md:h-25"
+              className="mr-3 h-12 md:h-20"
               alt="elite exteriors logo"
               loading="lazy"
             />
+            <span>
+              <span className="text-2xl font-semibold uppercase flex text-left">
+                Elite <br /> Exteriors
+              </span>
+            </span>
           </a>
           <div className="flex items-center lg:order-2">
-            <a
-              href="#get-quote"
-              className="text-sky-800 bg-sky-300 hover:bg-sky-800 hover:text-white focus:ring-4 focus:ring-sky-300 font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none"
+            <button
+              className="font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2"
+              onClick={() => {
+                const el = document.getElementById("get-quote");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              type="button"
             >
               Get a Quote
-            </a>
+            </button>
             <button
               data-collapse-toggle="mobile-menu-2"
               type="button"
