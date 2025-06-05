@@ -1,7 +1,8 @@
 import "./App.css";
-import { Hero } from "./components/Hero";
 import { Navbar } from "./components/Navbar";
+import { Hero } from "./components/Hero";
 import { About } from "./components/About";
+import { Services } from "./components/Services";
 import { Helmet } from "react-helmet";
 import { useHeadingAnimation } from "./hooks/useHeadingAnimation";
 
@@ -41,6 +42,8 @@ function App() {
 
         {/* About section highlighting family business story */}
         <About />
+        {/* Services section showcasing exterior services */}
+        <Services />
       </main>
     </>
   );
