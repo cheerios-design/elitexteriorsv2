@@ -6,24 +6,26 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2 lg:col-span-1">
-            <a href="/" className="flex items-center mb-6">
+            <a href="/" className="flex justify-center items-center mb-6">
               <img
                 src="src/assets/logos/main-logo.png"
                 className="h-16 w-auto"
                 alt="Elite Exteriors Logo"
               />
-              <span className="ml-3 text-2xl font-heading font-semibold">
+              <span className="ml-3 text-2xl flex text-left font-heading font-semibold">
                 Elite
                 <br />
                 Exteriors
               </span>
             </a>
-            <iframe
-              className="w-full max-w-[300px] h-[100px]"
-              title="BBB Seal"
-              src="https://seal-norfolk.bbb.org/frame/blue-seal-120-61-bbb-90553538.png?chk=3213FA74AA"
-              style={{ border: 0 }}
-            />
+            <div className="flex justify-center">
+              <iframe
+                className="h-[100px] w-[138px] lg:w-[138px] lg:h-[80px]"
+                title="BBB Seal"
+                src="https://seal-norfolk.bbb.org/frame/blue-seal-120-61-bbb-90553538.png?chk=3213FA74AA"
+                style={{ border: 0 }}
+              />
+            </div>
           </div>
 
           {/* Service Locations */}
