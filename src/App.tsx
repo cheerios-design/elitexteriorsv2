@@ -11,6 +11,7 @@ import { Testimonials } from "./components/Testimonials";
 import { GetQuote } from "./components/GetQuote";
 import { ErrorBoundary } from "react-error-boundary";
 import type { FallbackProps } from "react-error-boundary";
+import { Footer } from "./components/Footer";
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -67,6 +68,7 @@ const App = () => {
           </Suspense>
         </ErrorBoundary>
       </main>
+      <Footer />
     </>
   );
 };

@@ -56,7 +56,7 @@ export const GetQuote = ({ onLoadComplete }: GetQuoteProps) => {
 
   return (
     <section
-      id="get-quote"
+      id="GetQuote"
       className="py-8 antialiased w-full min-h-screen block md:py-16"
     >
       {isLoading ? (
