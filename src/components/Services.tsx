@@ -2,7 +2,7 @@ export const Services = () => {
   return (
     <section
       id="services"
-      className="bg-sky-100 pb-4 antialiased w-full h-fit block 0 md:pb-8"
+      className=" pb-4 antialiased w-full h-fit block 0 md:pb-8"
     >
       <div className="gap-16 items-center py-8 px-4 mx-auto max-w-screen-xl lg:grid lg:grid-cols-2 lg:py-16 lg:px-6">
         <div className="grid grid-cols-1 gap-4 mt-8">

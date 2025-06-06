@@ -6,6 +6,7 @@ import { Services } from "./components/Services";
 import { Gallery } from "./components/Gallery";
 import { Helmet } from "react-helmet";
 import { useHeadingAnimation } from "./hooks/useHeadingAnimation";
+import { Testimonials } from "./components/Testimonials";
 
 function App() {
   useHeadingAnimation();
@@ -47,6 +48,8 @@ function App() {
         <Services />
         {/* Gallery section displaying work examples */}
         <Gallery />
+        {/* Testimobials section */}
+        <Testimonials />
       </main>
     </>
   );
