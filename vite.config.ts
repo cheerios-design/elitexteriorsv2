@@ -4,5 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/elitexteriorsv2/", // Add this line - should match your repository name
   plugins: [tailwindcss(), react()],
 });

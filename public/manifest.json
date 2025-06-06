@@ -1,0 +1,19 @@
+{
+    "name": "elitexteriorsv2",
+    "short_name": "Elite Exteriors",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Professional exterior services in Hampton Roads area",
+    "icons": [
+        {
+            "src": "/elitexteriorsv2/assets/favicon/android-icon-36x36.png",
+            "sizes": "36x36",
+            "type": "image/png",
+            "density": "0.75"
+        }
+    ],
+    "start_url": "/elitexteriorsv2/",
+    "display": "standalone",
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff"
+}
