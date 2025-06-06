@@ -2,7 +2,6 @@
   "name": "elitexteriorsv2",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://your-username.github.io/elitexteriorsv2",
   "type": "module",
   "scripts": {
     "dev": "vite",
