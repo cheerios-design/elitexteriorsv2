@@ -42,33 +42,47 @@ const App = () => {
   return (
     <>
       <Helmet>
-        <title>Elite Exteriors - Professional Exterior Services</title>
+        <title>
+          Elite Exteriors - Professional Pressure Washing & Exterior Services in
+          Hampton Roads, VA
+        </title>
         <meta
           name="description"
-          content="Elite Exteriors - Professional pressure washing, gutter cleaning, and exterior services in Hampton Roads area."
+          content="Elite Exteriors - Professional pressure washing, gutter cleaning, Christmas light installation, and lawn care services in Hampton Roads, Virginia. Get your free quote today!"
+        />
+        <meta
+          name="keywords"
+          content="pressure washing, gutter cleaning, lawn care, Christmas lights, exterior cleaning, Hampton Roads, Virginia Beach, Chesapeake, Norfolk"
         />
       </Helmet>
 
-      <Navbar />
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
 
-      <main className="container mx-auto p-4 pt-40 flex flex-col items-center">
-        <ErrorBoundary
-          FallbackComponent={ErrorFallback}
-          onReset={() => {
-            // Reset functionality if needed
-          }}
-        >
-          <Suspense fallback={<LoadingFallback />}>
-            <Hero />
-            <About />
-            <Services />
-            <Gallery />
-            <Testimonials />
-            <GetQuote />
-          </Suspense>
-        </ErrorBoundary>
-      </main>
-      <Footer />
+        <main className="flex-1">
+          <ErrorBoundary
+            FallbackComponent={ErrorFallback}
+            onReset={() => {
+              // Reset functionality if needed
+            }}
+          >
+            <Suspense fallback={<LoadingFallback />}>
+              <div className="pt-20">
+                {" "}
+                {/* Add padding-top to account for fixed navbar */}
+                <Hero />
+                <About />
+                <Services />
+                <Gallery />
+                <Testimonials />
+                <GetQuote />
+              </div>
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+
+        <Footer />
+      </div>
     </>
   );
 };

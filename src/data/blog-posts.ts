@@ -1,6 +1,7 @@
-// src/data/blog-posts.js
+// src/data/blog-posts.ts
+import { type BlogPost, type BlogCategory } from "../types/blog";
 
-export const blogPosts = [
+export const blogPosts: BlogPost[] = [
   {
     id: 1,
     slug: "driveway-cleaning-101-removing-oil-stains-mold-and-dirt",
@@ -475,7 +476,7 @@ export const blogPosts = [
 ];
 
 // Blog categories for filtering
-export const blogCategories = [
+export const blogCategories: BlogCategory[] = [
   { id: "all", name: "All Posts", count: blogPosts.length },
   { id: "driveway-cleaning", name: "Driveway Cleaning", count: 1 },
   { id: "home-maintenance", name: "Home Maintenance", count: 2 },
@@ -486,7 +487,7 @@ export const blogCategories = [
 ];
 
 // Popular tags
-export const popularTags = [
+export const popularTags: string[] = [
   "pressure washing",
   "home maintenance",
   "hampton roads",
@@ -500,7 +501,10 @@ export const popularTags = [
 ];
 
 // Related posts logic
-export const getRelatedPosts = (currentPostId, limit = 3) => {
+export const getRelatedPosts = (
+  currentPostId: number,
+  limit: number = 3
+): BlogPost[] => {
   const currentPost = blogPosts.find((post) => post.id === currentPostId);
   if (!currentPost) return [];
 
@@ -515,7 +519,7 @@ export const getRelatedPosts = (currentPostId, limit = 3) => {
 };
 
 // Search functionality
-export const searchPosts = (query) => {
+export const searchPosts = (query: string): BlogPost[] => {
   const lowerQuery = query.toLowerCase();
   return blogPosts.filter(
     (post) =>
@@ -527,7 +531,7 @@ export const searchPosts = (query) => {
 };
 
 // Filter by category
-export const filterByCategory = (category) => {
+export const filterByCategory = (category: string): BlogPost[] => {
   if (category === "all") return blogPosts;
   return blogPosts.filter(
     (post) =>
