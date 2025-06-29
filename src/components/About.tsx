@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const About = () => {
   return (
     <section
@@ -14,8 +16,8 @@ export const About = () => {
             dedicated to providing top-notch pressure washing, gutter cleaning,
             and lawn care services in the Hampton Roads area.
           </p>
-          <a
-            href="about.html"
+          <Link
+            to="/about"
             className="inline-flex items-center justify-center px-5 py-3 text-base font-medium font-accent text-sky-500 rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300"
           >
             Read More
@@ -26,12 +28,12 @@ export const About = () => {
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               ></path>
             </svg>
-          </a>
+          </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
           <img

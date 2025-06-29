@@ -168,12 +168,16 @@ export const ServicesPage = () => (
           Contact us today for a free quote and let us help you enhance your
           home's exterior.
         </p>
-        <a
-          href="/#contact"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        <button
+          className="font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2"
+          onClick={() => {
+            const el = document.getElementById("get-quote");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          type="button"
         >
           Get a Quote
-        </a>
+        </button>
       </div>
     </div>
     <div id="contact" className="py-8 px-4 mx-auto max-w-screen-xl">
@@ -182,12 +186,16 @@ export const ServicesPage = () => (
         <p className="mb-6 text-gray-700">
           Have questions or need more information? Reach out to us anytime!
         </p>
-        <a
-          href="/#contact-form"
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        <button
+          className="font-medium rounded-lg text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2"
+          onClick={() => {
+            const el = document.getElementById("contact-form");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+          type="button"
         >
           Contact Form
-        </a>
+        </button>
       </div>
     </div>
     <Footer />
