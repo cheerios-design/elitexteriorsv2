@@ -1,601 +1,843 @@
+// src/pages/BlogPage.tsx
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { Navbar } from "../components/Navbar";
 import { Footer } from "../components/Footer";
-import { Helmet } from "react-helmet";
+import {
+  blogPosts,
+  blogCategories,
+  popularTags,
+  getRelatedPosts,
+  searchPosts,
+  filterByCategory,
+} from "../data/blog-posts";
 
-const placeholderImg =
-  "https://via.placeholder.com/400x250?text=Image+Unavailable";
+// Type declarations for blog data
+type BlogPost = {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  featuredImage?: string;
+  author: string;
+  authorImage?: string;
+  authorBio?: string;
+  category: string;
+  tags: string[];
+  publishDate: string;
+  readTime: string;
+  views: number;
+interface BlogPostCardProps {
+  post: BlogPost;
+  featured?: boolean;
+}
+const BlogPostCard = ({ post, featured = false }: BlogPostCardProps) => {
+  comments: number;
+  metaDescription?: string;
+};
 
-export const BlogPage = () => (
-  <>
-    <Helmet>
-      <title>Blog | Elite Exteriors</title>
-      <meta
-        name="description"
-        content="Stay updated with the latest news and tips from Elite Exteriors, your trusted partner for professional exterior services in Hampton Roads, VA."
-      />
-    </Helmet>
-    <Navbar />
-    <main className="pt-8 pb-16 lg:pt-16 lg:pb-24 bg-white dark:bg-gray-900 antialiased">
-      <div className="flex justify-between px-4 mx-auto max-w-screen-xl">
-        <article className="mx-auto w-full max-w-2xl format format-sm sm:format-base lg:format-lg format-blue dark:format-invert">
-          <header className="mb-4 lg:mb-6 not-format">
-            <address className="flex items-center mb-6 not-italic">
-              <div className="inline-flex items-center mr-3 text-sm text-gray-900 dark:text-white">
+type BlogCategory = {
+  id: string;
+  name: string;
+  count: number;
+};
+
+// Placeholder images
+const PLACEHOLDER_FEATURED =
+  "https://via.placeholder.com/400x250?text=Elite+Exteriors";
+const PLACEHOLDER_AUTHOR = "https://via.placeholder.com/40x40?text=EA";
+const PLACEHOLDER_RECENT = "https://via.placeholder.com/60x60?text=EA";
+const PLACEHOLDER_LARGE =
+  "https://via.placeholder.com/800x400?text=Elite+Exteriors";
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-12">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-sky-500"></div>
+  </div>
+);
+
+// Blog post card component
+const BlogPostCard = ({ post, featured = false }) => {
+  const cardClasses = featured
+    ? "bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+    : "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300";
+
+  return (
+    <article className={cardClasses}>
+      <div className="relative">
+        <img
+          src={
+            post.featuredImage && !post.featuredImage.startsWith("/")
+              ? post.featuredImage
+              : PLACEHOLDER_FEATURED
+          }
+          alt={post.title}
+          className={`w-full object-cover ${featured ? "h-64" : "h-48"}`}
+          loading="lazy"
+          onError={(e) => (e.currentTarget.src = PLACEHOLDER_FEATURED)}
+        />
+        <div className="absolute top-4 left-4">
+          <span className="bg-sky-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+            {post.category}
+          </span>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <div className="flex items-center text-sm text-gray-500 mb-3">
+          <time dateTime={post.publishDate}>
+            {new Date(post.publishDate).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </time>
+          <span className="mx-2">•</span>
+          <span>{post.readTime}</span>
+          <span className="mx-2">•</span>
+          <span>{post.views} views</span>
+        </div>
+
+        <h2
+          className={`font-heading font-bold text-gray-900 mb-3 ${
+            featured ? "text-2xl" : "text-xl"
+          }`}
+        >
+          <Link
+            to={`/blog/${post.slug}`}
+            className="hover:text-sky-600 transition-colors duration-200"
+          >
+            {post.title}
+          </Link>
+        </h2>
+
+        <p className="text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <img
+              src={
+                post.authorImage && !post.authorImage.startsWith("/")
+                  ? post.authorImage
+                  : PLACEHOLDER_AUTHOR
+              }
+              alt={post.author}
+              className="w-10 h-10 rounded-full mr-3"
+              onError={(e) => (e.currentTarget.src = PLACEHOLDER_AUTHOR)}
+            />
+            <div>
+              <p className="text-sm font-medium text-gray-900">{post.author}</p>
+              <p className="text-xs text-gray-500">Expert Team</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <span className="flex items-center">
+              <svg
+            {post.tags.slice(0, 3).map((tag: string) => (
+              <span
+                key={tag}
+                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full hover:bg-sky-100 hover:text-sky-700 cursor-pointer transition-colors"
+              >
+                #{tag}
+              </span>
+            ))}
+                />
+              </svg>
+              {post.likes}
+            </span>
+            <span className="flex items-center">
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="currentColor"
+interface BlogPostViewProps {
+  post: BlogPost;
+}
+const BlogPostView = ({ post }: BlogPostViewProps) => {
+  const relatedPosts = getRelatedPosts(post.id);
+                <path
+                  fillRule="evenodd"
+                  d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              {post.comments}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <div className="flex flex-wrap gap-2">
+            {post.tags.slice(0, 3).map((tag) => (
+        {post.tags.map((tag: string) => (
+          <meta key={tag} property="article:tag" content={tag} />
+        ))}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+// Single blog post view
+const BlogPostView = ({ post }) => {
+  const relatedPosts = getRelatedPosts(post.id);
+
+  return (
+    <>
+      <Helmet>
+        <title>{post.title} | Elite Exteriors Blog</title>
+        <meta name="description" content={post.metaDescription} />
+        <meta name="keywords" content={post.tags.join(", ")} />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.metaDescription} />
+        <meta
+          property="og:image"
+          content={post.featuredImage || PLACEHOLDER_LARGE}
+        />
+        <meta property="og:type" content="article" />
+        <meta property="article:published_time" content={post.publishDate} />
+        <meta property="article:author" content={post.author} />
+        <meta property="article:section" content={post.category} />
+        {post.tags.map((tag) => (
+          <meta key={tag} property="article:tag" content={tag} />
+        ))}
+      </Helmet>
+
+      <main className="pt-20 pb-16 lg:pt-24 lg:pb-24 bg-white antialiased">
+        <div className="flex justify-between px-4 mx-auto max-w-screen-xl">
+          <article className="mx-auto w-full max-w-4xl format format-sm sm:format-base lg:format-lg">
+            {/* Article Header */}
+            <header className="mb-8 lg:mb-12 not-format">
+              <div className="mb-6">
+                <Link
+                  to="/blog"
+                  className="inline-flex items-center text-sky-600 hover:text-sky-800 transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Back to Blog
+                </Link>
+              </div>
+
+              <div className="mb-6">
+                <span className="bg-sky-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                  {post.category}
+                </span>
+              </div>
+
+              <h1 className="mb-6 text-3xl font-extrabold leading-tight text-gray-900 lg:mb-8 lg:text-5xl font-heading">
+                {post.title}
+              </h1>
+
+              <div className="flex items-center mb-6 not-italic">
+                <div className="inline-flex items-center mr-6 text-sm text-gray-900">
+                  <img
+                    className="mr-4 w-16 h-16 rounded-full"
+                    src={
+                      post.authorImage && !post.authorImage.startsWith("/")
+                        ? post.authorImage
+                        : PLACEHOLDER_AUTHOR
+                    }
+                    alt={post.author}
+                    onError={(e) => (e.currentTarget.src = PLACEHOLDER_AUTHOR)}
+                  />
+                  <div>
+                    <p className="text-xl font-bold text-gray-900 font-heading">
+                      {post.author}
+                    </p>
+                    <p className="text-base text-gray-500 font-paragraph">
+                      {post.authorBio}
+                    </p>
+                    <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
+                      <time dateTime={post.publishDate}>
+                        {new Date(post.publishDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
+                      </time>
+                      <span>•</span>
+                      <span>{post.readTime}</span>
+                      <span>•</span>
+                      <span>{post.views} views</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Featured Image */}
+              <img
+                src={
+                  post.featuredImage && !post.featuredImage.startsWith("/")
+                    ? post.featuredImage
+                    : PLACEHOLDER_LARGE
+                }
+                alt={post.title}
+                className="w-full rounded-lg shadow-lg mb-8"
+                onError={(e) => (e.currentTarget.src = PLACEHOLDER_LARGE)}
+              />
+
+              {/* Social Share & Engagement */}
+              <div className="flex items-center justify-between py-4 border-t border-b border-gray-200 mb-8">
+                <div className="flex items-center space-x-6">
+                  <button className="flex items-center text-gray-600 hover:text-red-500 transition-colors">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {post.likes} Likes
+                  </button>
+                  <span className="flex items-center text-gray-600">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    {post.comments} Comments
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-500">Share:</span>
+                  <button className="text-blue-600 hover:text-blue-800 transition-colors">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
+                    </svg>
+                  </button>
+                {post.tags.map((tag: string) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-sky-100 text-sky-700 text-sm rounded-full hover:bg-sky-200 cursor-pointer transition-colors"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+                  </button>
+                  <button className="text-blue-800 hover:text-blue-600 transition-colors">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {/* Article Content */}
+            <div
+              className="prose prose-lg max-w-none prose-headings:font-heading prose-headings:text-gray-900 prose-p:font-paragraph prose-p:text-gray-700 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:text-sky-800 prose-strong:text-gray-900 prose-ul:font-paragraph prose-li:text-gray-700"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+
+            {/* Tags */}
+            <div className="mt-12 pt-8 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 font-heading">
+                Tags
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-sky-100 text-sky-700 text-sm rounded-full hover:bg-sky-200 cursor-pointer transition-colors"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            <div className="mt-12 p-8 bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg border border-sky-200">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4 font-heading">
+                  Ready to Transform Your Property?
+                </h3>
+                <p className="text-gray-700 mb-6 font-paragraph">
+                  Get a free quote for our professional exterior cleaning
+                  services in Hampton Roads.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    to="/quote"
+                    className="btn-primary inline-flex items-center justify-center px-6 py-3 text-white bg-sky-600 hover:bg-sky-700 rounded-lg font-medium transition-colors"
+                  >
+                    Get Free Quote
+                  </Link>
+                  <a
+                    href="tel:+1-757-796-7240"
+                    className="btn-secondary inline-flex items-center justify-center px-6 py-3 text-sky-600 bg-white border-2 border-sky-600 hover:bg-sky-600 hover:text-white rounded-lg font-medium transition-all"
+                  >
+                    Call (757) 796-7240
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Author Bio */}
+            <div className="mt-12 p-6 bg-gray-50 rounded-lg">
+              <div className="flex items-start">
                 <img
-                  className="mr-4 w-16 h-16 rounded-full"
-                  src={placeholderImg}
-                  alt="Author"
+                {relatedPosts.map((relatedPost: BlogPost) => (
+                  <BlogPostCard key={relatedPost.id} post={relatedPost} />
+                ))}
+                    "https://via.placeholder.com/64x64?text=EA"
+                  }
+                  alt={post.author}
                 />
                 <div>
-                  <a
-                    href="#"
-                    rel="author"
-                    className="text-xl font-bold text-gray-900 dark:text-white"
-                  >
-                    Jese Leos
-                  </a>
-                  <p className="text-base text-gray-500 dark:text-gray-400">
-                    Graphic Designer, educator & CEO Flowbite
+                  <h4 className="text-lg font-semibold text-gray-900 font-heading">
+                    {post.author}
+                  </h4>
+                  <p className="text-gray-600 mt-2 font-paragraph">
+                    {post.authorBio}
                   </p>
-                  <p className="text-base text-gray-500 dark:text-gray-400">
-                    <time dateTime="2022-02-08" title="February 8th, 2022">
-                      Feb. 8, 2022
-                    </time>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Elite Exteriors is a family-run business founded by Ahmet
+                    from Turkey and Gaby from Zimbabwe, providing exceptional
+                    pressure washing, gutter cleaning, and exterior services in
+                    Hampton Roads, Virginia.
                   </p>
                 </div>
               </div>
-            </address>
-            <h1 className="mb-4 text-3xl font-extrabold leading-tight text-gray-900 lg:mb-6 lg:text-4xl dark:text-white">
-              Best practices for successful prototypes
-            </h1>
-          </header>
-          <p className="lead">
-            Flowbite is an open-source library of UI components built with the
-            utility-first classes from Tailwind CSS. It also includes
-            interactive elements such as dropdowns, modals, datepickers.
-          </p>
-          <p>
-            Before going digital, you might benefit from scribbling down some
-            ideas in a sketchbook. This way, you can think things through before
-            committing to an actual design project.
-          </p>
-          <p>
-            But then I found a{" "}
-            <a href="https://flowbite.com">
-              component library based on Tailwind CSS called Flowbite
-            </a>
-            . It comes with the most commonly used UI components, such as
-            buttons, navigation bars, cards, form elements, and more which are
-            conveniently built with the utility classes from Tailwind CSS.
-          </p>
-          <figure>
-            <img src={placeholderImg} alt="Digital art" />
-            <figcaption>Digital art by Anonymous</figcaption>
-          </figure>
-          <h2>Getting started with Flowbite</h2>
-          <p>
-            First of all you need to understand how Flowbite works. This library
-            is not another framework. Rather, it is a set of components based on
-            Tailwind CSS that you can just copy-paste from the documentation.
-          </p>
-          <p>
-            It also includes a JavaScript file that enables interactive
-            components, such as modals, dropdowns, and datepickers which you can
-            optionally include into your project via CDN or NPM.
-          </p>
-          <p>
-            You can check out the{" "}
-            <a href="https://flowbite.com/docs/getting-started/quickstart/">
-              quickstart guide
-            </a>{" "}
-            to explore the elements by including the CDN files into your
-            project. But if you want to build a project with Flowbite I
-            recommend you to follow the build tools steps so that you can purge
-            and minify the generated CSS.
-          </p>
-          <p>
-            You'll also receive a lot of useful application UI, marketing UI,
-            and e-commerce pages that can help you get started with your
-            projects even faster. You can check out this{" "}
-            <a href="https://flowbite.com/docs/components/tables/">
-              comparison table
-            </a>{" "}
-            to better understand the differences between the open-source and pro
-            version of Flowbite.
-          </p>
-          <h2>When does design come in handy?</h2>
-          <p>
-            While it might seem like extra work at a first glance, here are some
-            key moments in which prototyping will come in handy:
-          </p>
-          <ol>
-            <li>
-              <strong>Usability testing</strong>. Does your user know how to
-              exit out of screens? Can they follow your intended user journey
-              and buy something from the site you’ve designed? By running a
-              usability test, you’ll be able to see how users will interact with
-              your design once it’s live;
-            </li>
-            <li>
-              <strong>Involving stakeholders</strong>. Need to check if your
-              GDPR consent boxes are displaying properly? Pass your prototype to
-              your data protection team and they can test it for real;
-            </li>
-            <li>
-              <strong>Impressing a client</strong>. Prototypes can help explain
-              or even sell your idea by providing your client with a hands-on
-              experience;
-            </li>
-            <li>
-              <strong>Communicating your vision</strong>. By using an
-              interactive medium to preview and test design elements, designers
-              and developers can understand each other — and the project —
-              better.
-            </li>
-          </ol>
-          <h3>Laying the groundwork for best design</h3>
-          <p>
-            Before going digital, you might benefit from scribbling down some
-            ideas in a sketchbook. This way, you can think things through before
-            committing to an actual design project.
-          </p>
-          <p>
-            Let's start by including the CSS file inside the <code>head</code>{" "}
-            tag of your HTML.
-          </p>
-          <h3>Understanding typography</h3>
-          <h4>Type properties</h4>
-          <p>
-            A typeface is a collection of letters. While each letter is unique,
-            certain shapes are shared across letters. A typeface represents
-            shared patterns across a collection of letters.
-          </p>
-          <h4>Baseline</h4>
-          <p>
-            A typeface is a collection of letters. While each letter is unique,
-            certain shapes are shared across letters. A typeface represents
-            shared patterns across a collection of letters.
-          </p>
-          <h4>Measurement from the baseline</h4>
-          <p>
-            A typeface is a collection of letters. While each letter is unique,
-            certain shapes are shared across letters. A typeface represents
-            shared patterns across a collection of letters.
-          </p>
-          <h3>Type classification</h3>
-          <h4>Serif</h4>
-          <p>
-            A serif is a small shape or projection that appears at the beginning
-            or end of a stroke on a letter. Typefaces with serifs are called
-            serif typefaces. Serif fonts are classified as one of the following:
-          </p>
-          <h4>Old-Style serifs</h4>
-          <ul>
-            <li>Low contrast between thick and thin strokes</li>
-            <li>Diagonal stress in the strokes</li>
-            <li>Slanted serifs on lower-case ascenders</li>
-          </ul>
-          <img src={placeholderImg} alt="Serif example" />
-          <ol>
-            <li>Low contrast between thick and thin strokes</li>
-            <li>Diagonal stress in the strokes</li>
-            <li>Slanted serifs on lower-case ascenders</li>
-          </ol>
-          <h3>Laying the best for successful prototyping</h3>
-          <p>
-            A serif is a small shape or projection that appears at the
-            beginning:
-          </p>
-          <blockquote>
-            <p>
-              Flowbite is just awesome. It contains tons of predesigned
-              components and pages starting from login screen to complex
-              dashboard. Perfect choice for your next SaaS application.
-            </p>
-          </blockquote>
-          <h4>Code example</h4>
-          <p>
-            A serif is a small shape or projection that appears at the beginning
-            or end of a stroke on a letter. Typefaces with serifs are called
-            serif typefaces. Serif fonts are classified as one of the following:
-          </p>
-          <pre>
-            <code className="language-html">{`<dl class="grid grid-cols-2 gap-8 max-w-screen-md text-gray-900 sm:grid-cols-3 dark:text-white">
-<div class="flex flex-col justify-center items-center">
-  <dt class="mb-2 text-3xl font-extrabold">73M+</dt>
-  <dd class="text-lg font-normal text-gray-500 dark:text-gray-400">developers</dd>
-</div>
-<div class="flex flex-col justify-center items-center">
-  <dt class="mb-2 text-3xl font-extrabold">1B+</dt>
-  <dd class="text-lg font-normal text-gray-500 dark:text-gray-400">contributors</dd>
-</div>
-<div class="flex flex-col justify-center items-center">
-  <dt class="mb-2 text-3xl font-extrabold">4M+</dt>
-  <dd class="text-lg font-normal text-gray-500 dark:text-gray-400">organizations</dd>
-</div>
-</dl>`}</code>
-          </pre>
-          <h4>Table example</h4>
-          <p>
-            A serif is a small shape or projection that appears at the beginning
-            or end of a stroke on a letter.
-          </p>
-          <table>
-            <thead>
-              <tr>
-                <th>Country</th>
-                <th>Date &amp; Time</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>United States</td>
-                <td>April 21, 2021</td>
-                <td>
-                  <strong>$2,300</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Canada</td>
-                <td>May 31, 2021</td>
-                <td>
-                  <strong>$300</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>United Kingdom</td>
-                <td>June 3, 2021</td>
-                <td>
-                  <strong>$2,500</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Australia</td>
-                <td>June 23, 2021</td>
-                <td>
-                  <strong>$3,543</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>Germany</td>
-                <td>July 6, 2021</td>
-                <td>
-                  <strong>$99</strong>
-                </td>
-              </tr>
-              <tr>
-                <td>France</td>
-                <td>August 23, 2021</td>
-                <td>
-                  <strong>$2,540</strong>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <h3>Best practices for setting up your prototype</h3>
-          <p>
-            <strong>Low fidelity or high fidelity?</strong> Fidelity refers to
-            how close a prototype will be to the real deal. If you’re simply
-            preparing a quick visual aid for a presentation, a low-fidelity
-            prototype — like a wireframe with placeholder images and some basic
-            text — would be more than enough. But if you’re going for more
-            intricate usability testing, a high-fidelity prototype — with
-            on-brand colors, fonts and imagery — could help get more pointed
-            results.
-          </p>
-          <p>
-            <strong>Consider your user</strong>. To create an intuitive user
-            flow, try to think as your user would when interacting with your
-            product. While you can fine-tune this during beta testing,
-            considering your user’s needs and habits early on will save you time
-            by setting you on the right path.
-          </p>
-          <p>
-            <strong>Start from the inside out</strong>. A nice way to both
-            organize your tasks and create more user-friendly prototypes is by
-            building your prototypes ‘inside out’. Start by focusing on what
-            will be important to your user, like a Buy now button or an image
-            gallery, and list each element by order of priority. This way,
-            you’ll be able to create a prototype that puts your users’ needs at
-            the heart of your design.
-          </p>
-          <p>
-            And there you have it! Everything you need to design and share
-            prototypes — right in Flowbite Figma.
-          </p>
-          <section className="not-format">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">
-                Discussion (20)
-              </h2>
             </div>
-            <form className="mb-6">
-              <div className="py-2 px-4 mb-4 bg-white rounded-lg rounded-t-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
-                <label htmlFor="comment" className="sr-only">
-                  Your comment
-                </label>
-                <textarea
-                  id="comment"
-                  rows={6}
-                  className="px-0 w-full text-sm text-gray-900 border-0 focus:ring-0 dark:text-white dark:placeholder-gray-400 dark:bg-gray-800"
-                  placeholder="Write a comment..."
-                  required
-                ></textarea>
-              </div>
-              <button
-                type="submit"
-                className="inline-flex items-center py-2.5 px-4 text-xs font-medium text-center text-white bg-primary-700 rounded-lg focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-900 hover:bg-primary-800"
-              >
-                Post comment
-              </button>
-            </form>
-            {/* Example comment */}
-            <article className="p-6 mb-6 text-base bg-white rounded-lg dark:bg-gray-900">
-              <footer className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <p className="inline-flex items-center mr-3 font-semibold text-sm text-gray-900 dark:text-white">
-                    <img
-                      className="mr-2 w-6 h-6 rounded-full"
-                      src={placeholderImg}
-                      alt="Michael Gough"
-                    />
-                    Michael Gough
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <time dateTime="2022-02-08" title="February 8th, 2022">
-                      Feb. 8, 2022
-                    </time>
-                  </p>
-                </div>
-              </footer>
-              <p>
-                Very straight-to-point article. Really worth time reading. Thank
-                you! But tools are just the instruments for the UX designers.
-                The knowledge of the design tools are as important as the
-                creation of the design strategy.
-              </p>
-              <div className="flex items-center mt-4 space-x-4">
-                <button
-                  type="button"
-                  className="flex items-center font-medium text-sm text-gray-500 hover:underline dark:text-gray-400"
-                >
-                  <svg
-                    className="mr-1.5 w-3 h-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 18"
-                  >
-                    <path d="M18 0H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4a1 1 0 0 0 1.707.707L10.414 13H18a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5 4h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2ZM5 4h5a1 1 0 1 1 0 2H5a1 1 0 0 1 0-2Zm2 5H5a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Zm9 0h-6a1 1 0 0 1 0-2h6a1 1 0 1 1 0 2Z" />
-                  </svg>
-                  Reply
-                </button>
-              </div>
-            </article>
-            <article className="p-6 mb-6 ml-6 lg:ml-12 text-base bg-white rounded-lg dark:bg-gray-900">
-              <footer className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <p className="inline-flex items-center mr-3 font-semibold text-sm text-gray-900 dark:text-white">
-                    <img
-                      className="mr-2 w-6 h-6 rounded-full"
-                      src={placeholderImg}
-                      alt="Jese Leos"
-                    />
-                    Jese Leos
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <time dateTime="2022-02-12" title="February 12th, 2022">
-                      Feb. 12, 2022
-                    </time>
-                  </p>
-                </div>
-              </footer>
-              <p>Much appreciated! Glad you liked it ☺️</p>
-              <div className="flex items-center mt-4 space-x-4">
-                <button
-                  type="button"
-                  className="flex items-center font-medium text-sm text-gray-500 hover:underline dark:text-gray-400"
-                >
-                  <svg
-                    className="mr-1.5 w-3 h-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 18"
-                  >
-                    <path d="M18 0H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4a1 1 0 0 0 1.707.707L10.414 13H18a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5 4h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2ZM5 4h5a1 1 0 1 1 0 2H5a1 1 0 0 1 0-2Zm2 5H5a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Zm9 0h-6a1 1 0 0 1 0-2h6a1 1 0 1 1 0 2Z" />
-                  </svg>
-                  Reply
-                </button>
-              </div>
-            </article>
-            <article className="p-6 mb-6 text-base bg-white border-t border-gray-200 dark:border-gray-700 dark:bg-gray-900">
-              <footer className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <p className="inline-flex items-center mr-3 font-semibold text-sm text-gray-900 dark:text-white">
-                    <img
-                      className="mr-2 w-6 h-6 rounded-full"
-                      src={placeholderImg}
-                      alt="Bonnie Green"
-                    />
-                    Bonnie Green
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <time dateTime="2022-03-12" title="March 12th, 2022">
-                      Mar. 12, 2022
-                    </time>
-                  </p>
-                </div>
-              </footer>
-              <p>
-                The article covers the essentials, challenges, myths and stages
-                the UX designer should consider while creating the design
-                strategy.
-              </p>
-              <div className="flex items-center mt-4 space-x-4">
-                <button
-                  type="button"
-                  className="flex items-center font-medium text-sm text-gray-500 hover:underline dark:text-gray-400"
-                >
-                  <svg
-                    className="mr-1.5 w-3 h-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 18"
-                  >
-                    <path d="M18 0H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4a1 1 0 0 0 1.707.707L10.414 13H18a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5 4h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2ZM5 4h5a1 1 0 1 1 0 2H5a1 1 0 0 1 0-2Zm2 5H5a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Zm9 0h-6a1 1 0 0 1 0-2h6a1 1 0 1 1 0 2Z" />
-                  </svg>
-                  Reply
-                </button>
-              </div>
-            </article>
-            <article className="p-6 text-base bg-white border-t border-gray-200 dark:border-gray-700 dark:bg-gray-900">
-              <footer className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <p className="inline-flex items-center mr-3 font-semibold text-sm text-gray-900 dark:text-white">
-                    <img
-                      className="mr-2 w-6 h-6 rounded-full"
-                      src={placeholderImg}
-                      alt="Helene Engels"
-                    />
-                    Helene Engels
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <time dateTime="2022-06-23" title="June 23rd, 2022">
-                      Jun. 23, 2022
-                    </time>
-                  </p>
-                </div>
-              </footer>
-              <p>
-                Thanks for sharing this. I do came from the Backend development
-                and explored some of the tools to design my Side Projects.
-              </p>
-              <div className="flex items-center mt-4 space-x-4">
-                <button
-                  type="button"
-                  className="flex items-center font-medium text-sm text-gray-500 hover:underline dark:text-gray-400"
-                >
-                  <svg
-                    className="mr-1.5 w-3 h-3"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 18"
-                  >
-                    <path d="M18 0H2a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2v4a1 1 0 0 0 1.707.707L10.414 13H18a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2Zm-5 4h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2ZM5 4h5a1 1 0 1 1 0 2H5a1 1 0 0 1 0-2Zm2 5H5a1 1 0 0 1 0-2h2a1 1 0 0 1 0 2Zm9 0h-6a1 1 0 0 1 0-2h6a1 1 0 1 1 0 2Z" />
-                  </svg>
-                  Reply
-                </button>
-              </div>
-            </article>
-          </section>
-        </article>
-      </div>
-    </main>
-
-    <aside
-      aria-label="Related articles"
-      className="py-8 lg:py-24 bg-gray-50 dark:bg-gray-800"
-    >
-      <div className="px-4 mx-auto max-w-screen-xl">
-        <h2 className="mb-8 text-2xl font-bold text-gray-900 dark:text-white">
-          Related articles
-        </h2>
-        <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((num) => (
-            <article className="max-w-xs" key={num}>
-              <a href="#">
-                <img
-                  src={placeholderImg}
-                  className="mb-5 rounded-lg"
-                  alt={`Image ${num}`}
-                />
-              </a>
-              <h2 className="mb-2 text-xl font-bold leading-tight text-gray-900 dark:text-white">
-                <a href="#">Sample Article {num}</a>
-              </h2>
-              <p className="mb-4 text-gray-500 dark:text-gray-400">
-                This is a placeholder for a related article summary.
-              </p>
-              <a
-                href="#"
-                className="inline-flex items-center font-medium underline underline-offset-4 text-primary-600 dark:text-primary-500 hover:no-underline"
-              >
-                Read in X minutes
-              </a>
-            </article>
-          ))}
+          </article>
         </div>
-      </div>
-    </aside>
 
-    <section className="bg-white dark:bg-gray-900">
-      <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
-        <div className="mx-auto max-w-screen-md sm:text-center">
-          <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl dark:text-white">
-            Sign up for our newsletter
-          </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-gray-500 md:mb-12 sm:text-xl dark:text-gray-400">
-            Stay up to date with the roadmap progress, announcements and
-            exclusive discounts feel free to sign up with your email.
-          </p>
-          <form action="#">
-            <div className="items-center mx-auto mb-3 space-y-4 max-w-screen-sm sm:flex sm:space-y-0">
-              <div className="relative w-full">
-                <label
-                  htmlFor="email"
-                  className="hidden mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-                >
-                  Email address
-                </label>
-                <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                  <svg
-                    className="w-4 h-4 text-gray-500 dark:text-gray-400"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 20 16"
-                  >
-                    <path d="m10.036 8.278 9.258-7.79A1.979 1.979 0 0 0 18 0H2A1.987 1.987 0 0 0 .641.541l9.395 7.737Z" />
-                    <path d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z" />
-                  </svg>
+        {/* Related Posts */}
+        {relatedPosts.length > 0 && (
+          <aside className="py-16 bg-gray-50">
+            <div className="px-4 mx-auto max-w-screen-xl">
+              <h2 className="mb-8 text-2xl font-bold text-gray-900 font-heading">
+                Related Articles
+              </h2>
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedPosts.map((relatedPost) => (
+                  <BlogPostCard key={relatedPost.id} post={relatedPost} />
+                ))}
+              </div>
+            </div>
+          </aside>
+        )}
+
+        {/* Newsletter Signup */}
+        <section className="bg-white py-16">
+          <div className="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+            <div className="mx-auto max-w-screen-md sm:text-center">
+              <h2 className="mb-4 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl font-heading">
+                Stay Updated with Elite Exteriors
+              </h2>
+              <p className="mx-auto mb-8 max-w-2xl text-gray-500 md:mb-12 sm:text-xl font-paragraph">
+                Get the latest tips, seasonal maintenance advice, and exclusive
+                offers delivered to your inbox.
+              </p>
+              <form className="max-w-md mx-auto">
+                <div className="items-center mx-auto mb-3 space-y-4 max-w-screen-sm sm:flex sm:space-y-0">
+                  <div className="relative w-full">
+                    <label
+                      htmlFor="email"
+                      className="hidden mb-2 text-sm font-medium text-gray-900"
+                    >
+                      Email address
+                    </label>
+                    <div className="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                      <svg
+                        className="w-4 h-4 text-gray-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 16"
+                      >
+                        <path d="m10.036 8.278 9.258-7.79A1.979 1.979 0 0 0 18 0H2A1.987 1.987 0 0 0 .641.541l9.395 7.737Z" />
+                        <path d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z" />
+                      </svg>
+                    </div>
+                    <input
+                      className="block p-3 pl-9 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 sm:rounded-none sm:rounded-l-lg focus:ring-sky-500 focus:border-sky-500"
+                      placeholder="Enter your email"
+                      type="email"
+                      id="email"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <button
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      if (query.trim()) {
+        const results = searchPosts(query);
+        setFilteredPosts(results);
+      } else {
+        setFilteredPosts(filterByCategory(selectedCategory));
+      }
+      setIsLoading(false);
+    }, 300);
+  };
+                  .
                 </div>
-                <input
-                  className="block p-3 pl-9 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 sm:rounded-none sm:rounded-l-lg focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                  placeholder="Enter your email"
-                  type="email"
-                  id="email"
-                  required
-                />
-              </div>
-              <div>
-                <button
-                  type="submit"
-                  className="py-3 px-5 w-full text-sm font-medium text-center text-white rounded-lg border cursor-pointer bg-primary-700 border-primary-600 sm:rounded-none sm:rounded-r-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-                >
-                  Subscribe
-                </button>
-              </div>
+  const handleCategoryFilter = (category: string) => {
+    setSelectedCategory(category);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const filtered = filterByCategory(category);
+      setFilteredPosts(filtered);
+      setIsLoading(false);
+    }, 200);
+  };
+const BlogListingView = () => {
+  const [filteredPosts, setFilteredPosts] = useState(blogPosts);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Handle search
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      if (query.trim()) {
+        const results = searchPosts(query);
+        setFilteredPosts(results);
+      } else {
+        setFilteredPosts(filterByCategory(selectedCategory));
+      }
+      setIsLoading(false);
+    }, 300);
+  };
+
+  // Handle category filter
+  const handleCategoryFilter = (category) => {
+    setSelectedCategory(category);
+    setIsLoading(true);
+
+    setTimeout(() => {
+      const filtered = filterByCategory(category);
+      setFilteredPosts(filtered);
+      setIsLoading(false);
+    }, 200);
+  };
+
+  const featuredPost = blogPosts[0]; // First post as featured
+  const regularPosts = filteredPosts.slice(1);
+
+  return (
+    <>
+      <Helmet>
+        <title>Blog - Expert Tips & Insights | Elite Exteriors</title>
+        <meta
+          name="description"
+          content="Read expert tips and insights about pressure washing, gutter cleaning, and home maintenance from Elite Exteriors. Serving Hampton Roads, Virginia."
+        />
+        <meta
+          name="keywords"
+          content="pressure washing blog, home maintenance tips, gutter cleaning advice, Hampton Roads, Virginia"
+        />
+        <meta
+          property="og:title"
+          content="Elite Exteriors Blog - Expert Home Maintenance Tips"
+        />
+        <meta
+          property="og:description"
+          content="Expert tips and insights about exterior cleaning and maintenance from the professionals at Elite Exteriors."
+        />
+        <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://www.elitxteriors.com/blog" />
+      </Helmet>
+
+      <main className="pt-20 pb-16 bg-gray-50 min-h-screen">
+        {/* Hero Section */}
+        <section className="bg-gradient-to-r from-sky-600 to-blue-700 text-white py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-6 font-heading">
+                Expert Tips & Insights
+              </h1>
+              <p className="text-xl md:text-2xl mb-8 font-paragraph opacity-90">
+                Professional advice for maintaining your home's exterior in
+                Hampton Roads
+              </p>
+
+              {/* Search Bar */}
+              <div className="max-w-md mx-auto relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg
+                    className="h-5 w-5 text-gray-400"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                  {blogCategories.map((category: BlogCategory) => (
+                    <button
+                      key={category.id}
+                      onClick={() => handleCategoryFilter(category.id)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                        selectedCategory === category.id
+                          ? "bg-sky-600 text-white"
+                          : "bg-white text-gray-700 hover:bg-sky-100 hover:text-sky-600"
+                      }`}
+                    >
+                      {category.name} ({category.count})
+                    </button>
+                  ))}
             </div>
-            <div className="mx-auto max-w-screen-sm text-sm text-left text-gray-500 newsletter-form-footer dark:text-gray-300">
-              We care about the protection of your data.{" "}
-              <a
-                href="#"
-                className="font-medium text-primary-600 dark:text-primary-500 hover:underline"
-              >
-                Read our Privacy Policy
-              </a>
-              .
-            </div>
-          </form>
+          </div>
+        </section>
+
+        <div className="container mx-auto px-4 py-12">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Main Content */}
+            <div className="lg:w-3/4">
+              {/* Featured Post */}
+              {!searchQuery && selectedCategory === "all" && (
+                <section className="mb-12">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
+                    Featured Article
+                  </h2>
+                  <BlogPostCard post={featuredPost} featured={true} />
+                </section>
+              )}
+
+              {/* Category Filter */}
+              <div className="mb-8">
+                <div className="flex flex-wrap gap-2">
+                  {blogCategories.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => handleCategoryFilter(category.id)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                        selectedCategory === category.id
+                          ? "bg-sky-600 text-white"
+                          : "bg-white text-gray-700 hover:bg-sky-100 hover:text-sky-600"
+                      }`}
+                    >
+                      {category.name} ({category.count})
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Search Results Info */}
+              {searchQuery && (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-blue-800">
+                    {filteredPosts.length} article
+                    {filteredPosts.length !== 1 ? "s" : ""} found for "
+                    {searchQuery}"
+                  </p>
+                </div>
+                      ).map((post: BlogPost) => (
+                        <BlogPostCard key={post.id} post={post} />
+                      ))}
+              {isLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  {filteredPosts.length === 0 ? (
+                    <div className="text-center py-12">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400 mb-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                    {popularTags.map((tag: string) => (
+                      <span
+                        key={tag}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full hover:bg-sky-100 hover:text-sky-700 cursor-pointer transition-colors"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                        Try adjusting your search or filter criteria.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-8 md:grid-cols-2">
+                      {(searchQuery || selectedCategory !== "all"
+                        ? filteredPosts
+                        : regularPosts
+                      ).map((post) => (
+                    {blogPosts.slice(0, 4).map((post: BlogPost) => (
+                      <div key={post.id} className="flex space-x-3">
+                        <img
+                          src={
+                            post.featuredImage &&
+                            !post.featuredImage.startsWith("/")
+                              ? post.featuredImage
+                              : PLACEHOLDER_RECENT
+                          }
+                          alt={post.title}
+                          className="w-15 h-15 rounded object-cover flex-shrink-0"
+                          onError={(e) =>
+                            (e.currentTarget.src = PLACEHOLDER_RECENT)
+                          }
+                        />
+                        <div>
+                          <Link
+                            to={`/blog/${post.slug}`}
+                            className="text-sm font-medium text-gray-900 hover:text-sky-600 transition-colors line-clamp-2"
+                          >
+                            {post.title}
+                          </Link>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(post.publishDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                    {blogPosts.slice(0, 4).map((post) => (
+                      <div key={post.id} className="flex space-x-3">
+                        <img
+                          src={
+                            post.featuredImage &&
+                            !post.featuredImage.startsWith("/")
+                              ? post.featuredImage
+                              : PLACEHOLDER_RECENT
+                          }
+                          alt={post.title}
+                          className="w-15 h-15 rounded object-cover flex-shrink-0"
+                          onError={(e) =>
+                            (e.currentTarget.src = PLACEHOLDER_RECENT)
+                          }
+                        />
+                        <div>
+                          <Link
+                            to={`/blog/${post.slug}`}
+                            className="text-sm font-medium text-gray-900 hover:text-sky-600 transition-colors line-clamp-2"
+                          >
+                            {post.title}
+                          </Link>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {new Date(post.publishDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+      const post = blogPosts.find((p: BlogPost) => p.slug === slug);
+                <div className="bg-gradient-to-br from-sky-600 to-blue-700 rounded-lg shadow-md p-6 text-white">
+                  <h3 className="text-lg font-semibold mb-3 font-heading">
+                    Need Professional Help?
+                  </h3>
+                  <p className="text-sm mb-4 opacity-90 font-paragraph">
+                    Get expert exterior cleaning services for your Hampton Roads
+                    property.
+                  </p>
+                  <Link
+                    to="/quote"
+                    className="inline-block w-full text-center bg-white text-sky-600 font-medium py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Get Free Quote
+                  </Link>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
-      </div>
-    </section>
-    <Footer />
-  </>
-);
+      </main>
+    </>
+  );
+};
+
+// Main Blog Page Component
+const BlogPage = () => {
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const [currentPost, setCurrentPost] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (slug) {
+      const post = blogPosts.find((p) => p.slug === slug);
+      if (post) {
+        setCurrentPost(post);
+      } else {
+        navigate("/blog", { replace: true });
+      }
+    } else {
+      setCurrentPost(null);
+    }
+    setIsLoading(false);
+  }, [slug, navigate]);
+
+  if (isLoading) {
+    return (
+      <>
+        <Navbar />
+        <LoadingSpinner />
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navbar />
+      {currentPost ? <BlogPostView post={currentPost} /> : <BlogListingView />}
+      <Footer />
+    </>
+  );
+};
 
 export default BlogPage;

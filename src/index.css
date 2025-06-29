@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "flowbite/plugin";
 
+/* Import blog-specific styles */
+@import "./styles/blog.css";
+
 :root {
   --font-heading: "Oswald", sans-serif;
   --font-paragraph: "Quicksand", sans;
@@ -141,5 +144,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-
 }
