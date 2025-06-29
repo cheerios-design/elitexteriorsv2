@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@plugin "flowbite/plugin";
 
 /* Import blog-specific styles */
 @import "./styles/blog.css";

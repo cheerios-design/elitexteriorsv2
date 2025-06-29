@@ -15,6 +15,24 @@ import {
 } from "../data/blog-posts";
 import { type BlogPost, type BlogCategory } from "../types/blog";
 
+// Import blog images
+import imgDriveway from "../assets/images/blog/driveway-cleaning-featured.jpg";
+import imgChesapeake from "../assets/images/blog/chesapeake-humidity-featured.jpg";
+import imgSeasonal from "../assets/images/blog/seasonal-pressure-washing-featured.jpg";
+import imgAffordable from "../assets/images/blog/affordable-pressure-washing-featured.jpg";
+import imgChristmas from "../assets/images/blog/christmas-lights-featured.jpg";
+import imgGutter from "../assets/images/blog/gutter-cleaning-featured.jpg";
+
+// Map blog slugs to imported images
+const blogImageMap: Record<string, string> = {
+  "driveway-cleaning-101-removing-oil-stains-mold-and-dirt": imgDriveway,
+  "how-chesapeake-humidity-affects-home-exterior": imgChesapeake,
+  "best-time-of-year-pressure-washing-hampton-roads": imgSeasonal,
+  "affordable-pressure-washing-solutions-virginia": imgAffordable,
+  "reliable-christmas-light-hanging-hampton-roads": imgChristmas,
+  "expert-gutter-cleaning-services-hampton-roads": imgGutter,
+};
+
 // Placeholder images
 const PLACEHOLDER_FEATURED =
   "https://via.placeholder.com/400x250?text=Elite+Exteriors";
@@ -43,15 +61,18 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({
     ? "bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
     : "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300";
 
+  // Always use placeholder for blog images
+  const imageSrc = PLACEHOLDER_FEATURED;
+
   return (
     <article className={cardClasses}>
       <div className="relative">
         <img
-          src={post.featuredImage || PLACEHOLDER_FEATURED}
+          src={imageSrc}
           alt={post.title}
           className={`w-full object-cover ${featured ? "h-64" : "h-48"}`}
           loading="lazy"
-          onError={(e) => (e.currentTarget.src = PLACEHOLDER_FEATURED)}
+          onError={(e) => (e.currentTarget.src = imgDriveway)}
         />
         <div className="absolute top-4 left-4">
           <span className="bg-sky-600 text-white px-3 py-1 rounded-full text-sm font-medium">
