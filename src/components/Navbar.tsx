@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logoMain from "../assets/logos/main-logo.png";
 
 export const Navbar = () => {
   return (
@@ -7,7 +8,7 @@ export const Navbar = () => {
         <div className="flex flex-wrap justify-between items-center mx-auto max-full">
           <Link to="/" className="flex items-center">
             <img
-              src="src/assets/logos/main-logo.png"
+              src={logoMain}
               className="mr-3 h-12 md:h-20"
               alt="elite exteriors logo"
               loading="lazy"
