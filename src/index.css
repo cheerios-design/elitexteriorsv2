@@ -69,13 +69,8 @@ body {
 
 a {
   font-weight: 500;
-  color: var(--link-color);
   text-decoration: none;
   transition: color 0.25s;
-}
-
-a:hover {
-  color: var(--link-hover-color);
 }
 
 body {
@@ -89,18 +84,15 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-  color: var(--heading-color);
 }
 
 h2 {
   font-size: 2.4em;
   line-height: 1.2;
-  color: var(--heading-color);
 }
 
 p {
   line-height: 1.6;
-  color: var(--paragraph-color);
 }
 
 button {
@@ -110,13 +102,8 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: var(--button-color);
   cursor: pointer;
   transition: border-color 0.25s;
-}
-
-button:hover {
-  background-color: var(--button-hover-color);
 }
 
 button:focus,
@@ -131,101 +118,6 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
     background-color: #ffffff;
   }
-
-  a:hover {
-    color: #747bff;
-  }
-
-  button {
-    background-color: #f9f9f9;
-  }
-}
-
-/* Blog page specific contrast improvements */
-.blog-post-card .category-badge {
-  background-color: #0369a1;
-  /* sky-700 for better contrast */
-  color: #ffffff;
-}
-
-.blog-post-card .like-button {
-  color: #374151;
-  /* gray-700 for better contrast */
-}
-
-.blog-post-card .like-button:hover {
-  color: #dc2626;
-  /* red-600 for better contrast */
-}
-
-.blog-post-card .like-button.liked {
-  color: #dc2626;
-  /* red-600 for better contrast */
-}
-
-.blog-engagement .share-button {
-  background-color: #f3f4f6;
-  /* gray-100 for hover background */
-  border-radius: 0.5rem;
-  padding: 0.5rem;
-}
-
-.blog-engagement .share-button:hover {
-  background-color: #e5e7eb;
-  /* gray-200 for hover */
-}
-
-.blog-engagement .share-button:focus {
-  outline: 2px solid #3b82f6;
-  /* blue-500 for focus ring */
-  outline-offset: 2px;
-}
-
-.comment-form textarea {
-  border: 2px solid #d1d5db;
-  /* gray-300 for better visibility */
-}
-
-.comment-form textarea:focus {
-  border-color: #0ea5e9;
-  /* sky-500 */
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
-}
-
-.comment-author {
-  color: #111827;
-  /* gray-900 for better contrast */
-  font-weight: 600;
-}
-
-.comment-content {
-  color: #374151;
-  /* gray-700 for better readability */
-  line-height: 1.6;
-}
-
-/* Ensure all interactive elements meet contrast requirements */
-.btn-primary {
-  background-color: #0369a1;
-  /* sky-700 for AAA contrast */
-  color: #ffffff;
-}
-
-.btn-primary:hover {
-  background-color: #0284c7;
-  /* sky-600 */
-}
-
-.btn-secondary {
-  color: #0369a1;
-  /* sky-700 for better contrast */
-  border-color: #0369a1;
-}
-
-.btn-secondary:hover {
-  background-color: #0369a1;
-  color: #ffffff;
 }

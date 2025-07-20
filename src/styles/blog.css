@@ -196,12 +196,6 @@
     background: #94a3b8;
 }
 
-/* Enhanced focus states for accessibility */
-.focus-visible:focus {
-    outline: 2px solid #0ea5e9;
-    outline-offset: 2px;
-}
-
 /* Tag cloud hover effects */
 .tag-cloud-item {
     transition: all 0.2s ease;
@@ -210,50 +204,6 @@
 .tag-cloud-item:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-/* Enhanced button styles */
-.btn-blog-primary {
-    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.btn-blog-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    color: white;
-    text-decoration: none;
-}
-
-.btn-blog-secondary {
-    background: white;
-    border: 2px solid #0ea5e9;
-    color: #0ea5e9;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-.btn-blog-secondary:hover {
-    background: #0ea5e9;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
 }
 
 /* Loading animations */

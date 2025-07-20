@@ -351,10 +351,10 @@ const BlogListingView: React.FC = () => {
 
       <div className="pt-20 pb-16 bg-gray-50 min-h-screen">
         {/* Hero Section */}
-        <section className="bg-gradient-to-b from-sky-400 to-sky-200 py-16">
+        <section className="bg-gradient-to-b from-blue-900 to-sky-600 py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white font-heading">
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white font-body">
                 Elite Exteriors Blog
               </h1>
               <p className="text-xl mb-8 text-white font-paragraph">
@@ -374,7 +374,7 @@ const BlogListingView: React.FC = () => {
                     placeholder="Search articles..."
                     value={searchQuery}
                     onChange={handleSearch}
-                    className="w-full px-4 py-3 pl-12 text-gray-900 bg-white border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-950 focus:border-transparent"
+                    className="w-full px-4 py-3 pl-12 text-gray-900 bg-white border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                   />
                   <svg
                     className="absolute left-4 top-3.5 h-5 w-5 text-gray-600"
@@ -413,7 +413,7 @@ const BlogListingView: React.FC = () => {
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
                       selectedCategory === "all"
                         ? "bg-sky-600 text-white"
-                        : "bg-white text-gray-800 hover:bg-gray-200 border border-gray-300"
+                        : "bg-gray-700 text-white hover:bg-gray-800 border border-gray-600"
                     }`}
                     aria-pressed={selectedCategory === "all"}
                   >
@@ -426,7 +426,7 @@ const BlogListingView: React.FC = () => {
                       className={`px-4 py-2 rounded-full text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
                         selectedCategory === category.id
                           ? "bg-sky-600 text-white"
-                          : "bg-white text-gray-800 hover:bg-gray-200 border border-gray-300"
+                          : "bg-gray-700 text-white hover:bg-gray-800 border border-gray-600"
                       }`}
                       aria-pressed={selectedCategory === category.id}
                     >
@@ -446,7 +446,7 @@ const BlogListingView: React.FC = () => {
                   <section className="mb-12" aria-labelledby="featured-heading">
                     <h2
                       id="featured-heading"
-                      className="text-2xl font-bold text-gray-900 mb-6 font-heading"
+                      className="text-2xl font-bold text-blue-950 mb-6 font-heading"
                     >
                       Featured Article
                     </h2>
@@ -459,7 +459,7 @@ const BlogListingView: React.FC = () => {
                 <section aria-labelledby="articles-heading">
                   <h2
                     id="articles-heading"
-                    className="text-2xl font-bold text-gray-900 mb-6 font-heading"
+                    className="text-2xl font-bold text-blue-950 mb-6 font-heading"
                   >
                     {searchQuery
                       ? `Search Results for "${searchQuery}"`
@@ -555,6 +555,7 @@ const BlogListingView: React.FC = () => {
                   <a
                     href="/quote"
                     className="block w-full px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 text-center"
+                    aria-label="Get a free quote for our services"
                   >
                     Get Free Quote
                   </a>
