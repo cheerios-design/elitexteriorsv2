@@ -12,7 +12,7 @@ import {
   searchPosts,
   filterByCategory,
 } from "../data/blog-posts";
-import { type BlogPost } from "../types/blog";
+import { type BlogPost, type BlogCategory } from "../types/blog";
 
 // Import blog images
 import imgDriveway from "../assets/images/blog/driveway-cleaning-featured.jpg";
