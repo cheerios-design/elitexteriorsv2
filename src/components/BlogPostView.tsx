@@ -1,18 +1,9 @@
-// src/pages/BlogPage.tsx
+// src/components/BlogPostView.tsx
 import React, { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet";
-import { Navbar } from "../components/Navbar";
-import { Footer } from "../components/Footer";
-import {
-  blogPosts,
-  blogCategories,
-  popularTags,
-  getRelatedPosts,
-  searchPosts,
-  filterByCategory,
-} from "../data/blog-posts";
 import { type BlogPost } from "../types/blog";
+import { getRelatedPosts } from "../data/blog-posts";
 
 // Import blog images
 import imgDriveway from "../assets/images/blog/driveway-cleaning-featured.jpg";
@@ -49,13 +40,6 @@ const getPostImage = (post: BlogPost): string => {
   return blogImageMap[post.slug] || imgDriveway; // Default to driveway image
 };
 
-// Loading component with better contrast
-const LoadingSpinner: React.FC = () => (
-  <div className="flex items-center justify-center py-12">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-sky-600"></div>
-  </div>
-);
-
 // Utility functions for local storage
 const getStoredData = (
   key: string,
@@ -82,168 +66,193 @@ interface BlogPostCardProps {
   featured?: boolean;
 }
 
-const BlogPostCard: React.FC<BlogPostCardProps> = ({
-  post,
-  featured = false,
-}) => {
-  const [localLikes, setLocalLikes] = useState(post.likes);
-  const [localViews, setLocalViews] = useState(post.views);
-  const [isLiked, setIsLiked] = useState(false);
+// Optimized BlogPostCard with better accessibility
+const BlogPostCard: React.FC<BlogPostCardProps> = React.memo(
+  ({ post, featured = false }) => {
+    const [localLikes, setLocalLikes] = useState(post.likes);
+    const [localViews, setLocalViews] = useState(post.views);
+    const [isLiked, setIsLiked] = useState(false);
 
-  useEffect(() => {
-    // Check if post is liked
-    const likedPosts = getStoredData(`likedPosts`, []) as number[];
-    setIsLiked(likedPosts.includes(post.id));
+    useEffect(() => {
+      // Check if post is liked
+      const likedPosts = getStoredData(`likedPosts`, []) as number[];
+      setIsLiked(likedPosts.includes(post.id));
 
-    // Increment view count when card is rendered
-    const viewedPosts = getStoredData(`viewedPosts`, []) as number[];
-    if (!viewedPosts.includes(post.id)) {
-      setLocalViews((prev) => prev + 1);
-      viewedPosts.push(post.id);
-      setStoredData(`viewedPosts`, viewedPosts);
-    }
-  }, [post.id]);
+      // Increment view count when card is rendered
+      const viewedPosts = getStoredData(`viewedPosts`, []) as number[];
+      if (!viewedPosts.includes(post.id)) {
+        setLocalViews((prev) => prev + 1);
+        viewedPosts.push(post.id);
+        setStoredData(`viewedPosts`, viewedPosts);
+      }
+    }, [post.id]);
 
-  const handleLike = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const likedPosts = getStoredData(`likedPosts`, []) as number[];
+    const handleLike = (e: React.MouseEvent) => {
+      e.preventDefault();
+      const likedPosts = getStoredData(`likedPosts`, []) as number[];
 
-    if (isLiked) {
-      const newLikedPosts = likedPosts.filter((id) => id !== post.id);
-      setStoredData(`likedPosts`, newLikedPosts);
-      setLocalLikes((prev) => prev - 1);
-      setIsLiked(false);
-    } else {
-      likedPosts.push(post.id);
-      setStoredData(`likedPosts`, likedPosts);
-      setLocalLikes((prev) => prev + 1);
-      setIsLiked(true);
-    }
-  };
+      if (isLiked) {
+        const newLikedPosts = likedPosts.filter((id) => id !== post.id);
+        setStoredData(`likedPosts`, newLikedPosts);
+        setLocalLikes((prev) => prev - 1);
+        setIsLiked(false);
+      } else {
+        likedPosts.push(post.id);
+        setStoredData(`likedPosts`, likedPosts);
+        setLocalLikes((prev) => prev + 1);
+        setIsLiked(true);
+      }
+    };
 
-  const cardClasses = featured
-    ? "bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
-    : "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300";
+    const cardClasses = featured
+      ? "bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+      : "bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300";
 
-  const imageSrc = getPostImage(post);
+    const imageSrc = getPostImage(post);
 
-  return (
-    <article className={cardClasses}>
-      <div className="relative">
-        <img
-          src={imageSrc}
-          alt={post.title}
-          className={`w-full object-cover ${featured ? "h-64" : "h-48"}`}
-          loading="lazy"
-        />
-        <div className="absolute top-4 left-4">
-          <span className="bg-sky-700 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg category-badge">
-            {post.category}
-          </span>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="flex items-center text-sm text-gray-600 mb-3">
-          <time dateTime={post.publishDate}>
-            {new Date(post.publishDate).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </time>
-          <span className="mx-2">•</span>
-          <span>{post.readTime}</span>
-          <span className="mx-2">•</span>
-          <span className="font-medium">{localViews} views</span>
-        </div>
-        <h2
-          className={`font-heading font-bold text-gray-900 mb-3 leading-tight ${
-            featured ? "text-2xl" : "text-xl"
-          }`}
-        >
-          <Link
-            to={`/blog/${post.slug}`}
-            className="hover:text-sky-700 transition-colors duration-200"
-          >
-            {post.title}
-          </Link>
-        </h2>
-        <p className="text-gray-700 mb-4 line-clamp-3 leading-relaxed">
-          {post.excerpt}
-        </p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <img
-              src={logoMain}
-              alt={post.author}
-              className="w-10 h-10 rounded-full mr-3 object-contain bg-white p-1 border border-gray-200"
-            />
-            <div>
-              <p className="text-sm font-medium text-gray-900">{post.author}</p>
-              <p className="text-xs text-gray-600">Expert Team</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 text-sm">
-            <button
-              onClick={handleLike}
-              className={`flex items-center transition-colors duration-200 like-button ${
-                isLiked
-                  ? "text-red-600 hover:text-red-700 liked"
-                  : "text-gray-700 hover:text-red-600"
-              }`}
-              aria-label={isLiked ? "Unlike post" : "Like post"}
-            >
-              <svg
-                className={`w-4 h-4 mr-1 transition-transform duration-200 ${
-                  isLiked ? "scale-110" : ""
-                }`}
-                fill={isLiked ? "currentColor" : "none"}
-                stroke={isLiked ? "none" : "currentColor"}
-                strokeWidth="2"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="font-medium">{localLikes}</span>
-            </button>
-            <span className="flex items-center text-gray-600">
-              <svg
-                className="w-4 h-4 mr-1"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-              <span className="font-medium">{post.comments}</span>
+    return (
+      <article className={cardClasses}>
+        <div className="relative">
+          <img
+            src={imageSrc}
+            alt={post.title}
+            className={`w-full object-cover ${featured ? "h-64" : "h-48"}`}
+            loading="lazy"
+            width={featured ? "800" : "400"}
+            height={featured ? "256" : "192"}
+          />
+          <div className="absolute top-4 left-4">
+            <span className="bg-sky-700 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
+              {post.category}
             </span>
           </div>
         </div>
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <div className="flex flex-wrap gap-2">
-            {post.tags.slice(0, 3).map((tag: string) => (
-              <span
-                key={tag}
-                className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full hover:bg-sky-100 hover:text-sky-800 cursor-pointer transition-colors font-medium"
+        <div className="p-6">
+          <div className="flex items-center text-sm text-gray-800 mb-3">
+            <time dateTime={post.publishDate}>
+              {new Date(post.publishDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </time>
+            <span className="mx-2">•</span>
+            <span>{post.readTime}</span>
+            <span className="mx-2">•</span>
+            <span className="font-medium">{localViews} views</span>
+          </div>
+          <h2
+            className={`font-heading font-bold text-gray-900 mb-3 leading-tight ${
+              featured ? "text-2xl" : "text-xl"
+            }`}
+          >
+            <Link
+              to={`/blog/${post.slug}`}
+              className="hover:text-sky-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded"
+            >
+              {post.title}
+            </Link>
+          </h2>
+          <p className="text-gray-800 mb-4 line-clamp-3 leading-relaxed">
+            {post.excerpt}
+          </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <img
+                src={logoMain}
+                alt={post.author}
+                className="w-10 h-10 rounded-full mr-3 object-contain bg-white p-1 border border-gray-200"
+                width="40"
+                height="40"
+              />
+              <div>
+                <p className="text-sm font-medium text-gray-900">
+                  {post.author}
+                </p>
+                <p className="text-xs text-gray-700">Expert Team</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 text-sm">
+              <button
+                onClick={handleLike}
+                className={`flex items-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded px-2 py-1 ${
+                  isLiked
+                    ? "text-red-600 hover:text-red-700"
+                    : "text-gray-800 hover:text-red-600"
+                }`}
+                aria-label={
+                  isLiked
+                    ? `Unlike post. Currently ${localLikes} likes`
+                    : `Like post. Currently ${localLikes} likes`
+                }
               >
-                #{tag}
+                <svg
+                  className={`w-4 h-4 mr-1 transition-transform duration-200 ${
+                    isLiked ? "scale-110" : ""
+                  }`}
+                  fill={isLiked ? "currentColor" : "none"}
+                  stroke={isLiked ? "none" : "currentColor"}
+                  strokeWidth="2"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="font-medium">{localLikes}</span>
+              </button>
+              <span
+                className="flex items-center text-gray-800"
+                aria-label={`${post.comments} comments`}
+              >
+                <svg
+                  className="w-4 h-4 mr-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 20 20"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                  />
+                </svg>
+                <span className="font-medium">{post.comments}</span>
               </span>
-            ))}
+            </div>
+          </div>
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="flex flex-wrap gap-2">
+              {post.tags.slice(0, 3).map((tag: string) => (
+                <span
+                  key={tag}
+                  className="px-2 py-1 bg-gray-200 text-gray-900 text-xs rounded-full hover:bg-sky-200 hover:text-sky-900 cursor-pointer transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-sky-500"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Filter by tag: ${tag}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      // Add tag filtering logic here
+                    }
+                  }}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
-    </article>
-  );
-};
+      </article>
+    );
+  }
+);
+
+BlogPostCard.displayName = "BlogPostCard";
 
 interface BlogPostViewProps {
   post: BlogPost;
@@ -366,6 +375,10 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
         {post.tags.map((tag: string) => (
           <meta key={tag} property="article:tag" content={tag} />
         ))}
+        <link
+          rel="canonical"
+          href={`https://www.elitxteriors.com/blog/${post.slug}`}
+        />
       </Helmet>
       <main className="pt-20 pb-16 lg:pt-24 lg:pb-24 bg-white antialiased">
         <div className="flex justify-between px-4 mx-auto max-w-screen-xl">
@@ -375,12 +388,13 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
               <div className="mb-6">
                 <Link
                   to="/blog"
-                  className="inline-flex items-center text-sky-600 hover:text-sky-800 transition-colors"
+                  className="inline-flex items-center text-sky-600 hover:text-sky-800 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 rounded"
                 >
                   <svg
                     className="w-4 h-4 mr-2"
                     fill="currentColor"
                     viewBox="0 0 20 20"
+                    aria-hidden="true"
                   >
                     <path
                       fillRule="evenodd"
@@ -392,7 +406,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                 </Link>
               </div>
               <div className="mb-6">
-                <span className="bg-sky-700 text-white px-4 py-2 rounded-full text-sm font-medium category-badge">
+                <span className="bg-sky-700 text-white px-4 py-2 rounded-full text-sm font-medium">
                   {post.category}
                 </span>
               </div>
@@ -405,15 +419,17 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                     className="mr-4 w-16 h-16 rounded-full object-contain bg-white p-2"
                     src={logoMain}
                     alt={post.author}
+                    width="64"
+                    height="64"
                   />
                   <div>
                     <p className="text-xl font-bold text-gray-900 font-heading">
                       {post.author}
                     </p>
-                    <p className="text-base text-gray-600 font-paragraph">
+                    <p className="text-base text-gray-700 font-paragraph">
                       {post.authorBio}
                     </p>
-                    <div className="flex items-center mt-2 space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center mt-2 space-x-4 text-sm text-gray-700">
                       <time dateTime={post.publishDate}>
                         {new Date(post.publishDate).toLocaleDateString(
                           "en-US",
@@ -432,24 +448,31 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                   </div>
                 </div>
               </div>
-              {/* Featured Image */}
+              {/* Featured Image with proper dimensions */}
               <img
                 src={imageSrc}
                 alt={post.title}
                 className="w-full rounded-lg shadow-lg mb-8"
+                width="800"
+                height="400"
+                loading="eager"
               />
 
               {/* Interactive Social Share & Engagement */}
-              <div className="flex flex-col sm:flex-row items-center justify-between py-6 border-t border-b border-gray-300 mb-8 bg-gray-50 px-6 rounded-lg blog-engagement">
+              <div className="flex flex-col sm:flex-row items-center justify-between py-6 border-t border-b border-gray-300 mb-8 bg-gray-50 px-6 rounded-lg">
                 <div className="flex items-center space-x-6 mb-4 sm:mb-0">
                   <button
                     onClick={handleLike}
-                    className={`flex items-center font-medium transition-all duration-200 like-button ${
+                    className={`flex items-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-lg px-3 py-2 ${
                       isLiked
-                        ? "text-red-600 hover:text-red-700 liked"
-                        : "text-gray-700 hover:text-red-600"
-                    } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded-lg px-3 py-2`}
-                    aria-label={isLiked ? "Unlike post" : "Like post"}
+                        ? "text-red-600 hover:text-red-700"
+                        : "text-gray-800 hover:text-red-600"
+                    }`}
+                    aria-label={
+                      isLiked
+                        ? `Unlike post. Currently ${localLikes} likes`
+                        : `Like post. Currently ${localLikes} likes`
+                    }
                   >
                     <svg
                       className={`w-6 h-6 mr-2 transition-transform duration-200 ${
@@ -459,6 +482,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                       stroke={isLiked ? "none" : "currentColor"}
                       strokeWidth="2"
                       viewBox="0 0 20 20"
+                      aria-hidden="true"
                     >
                       <path
                         fillRule="evenodd"
@@ -468,13 +492,17 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                     </svg>
                     {localLikes} {localLikes === 1 ? "Like" : "Likes"}
                   </button>
-                  <span className="flex items-center text-gray-700 font-medium">
+                  <span
+                    className="flex items-center text-gray-800 font-medium"
+                    aria-label={`${comments.length} comments`}
+                  >
                     <svg
                       className="w-6 h-6 mr-2"
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="2"
                       viewBox="0 0 20 20"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -487,51 +515,54 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                   </span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-800">
                     Share:
                   </span>
                   <button
                     onClick={() => handleShare("facebook")}
-                    className="text-blue-600 hover:text-blue-800 transition-colors share-button focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="text-blue-600 hover:text-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1"
                     aria-label="Share on Facebook"
                   >
                     <svg
                       className="w-5 h-5"
                       fill="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
                     </svg>
                   </button>
                   <button
                     onClick={() => handleShare("twitter")}
-                    className="text-blue-400 hover:text-blue-600 transition-colors share-button focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="text-blue-400 hover:text-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400 rounded p-1"
                     aria-label="Share on Twitter"
                   >
                     <svg
                       className="w-5 h-5"
                       fill="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z" />
                     </svg>
                   </button>
                   <button
                     onClick={() => handleShare("linkedin")}
-                    className="text-blue-700 hover:text-blue-900 transition-colors share-button focus:outline-none focus:ring-2 focus:ring-blue-700"
+                    className="text-blue-700 hover:text-blue-900 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-700 rounded p-1"
                     aria-label="Share on LinkedIn"
                   >
                     <svg
                       className="w-5 h-5"
                       fill="currentColor"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
                   </button>
                   <button
                     onClick={() => handleShare("copy")}
-                    className="text-gray-600 hover:text-gray-800 transition-colors share-button focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    className="text-gray-700 hover:text-gray-900 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 rounded p-1"
                     aria-label="Copy link"
                   >
                     <svg
@@ -540,6 +571,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                       stroke="currentColor"
                       strokeWidth="2"
                       viewBox="0 0 24 24"
+                      aria-hidden="true"
                     >
                       <path
                         strokeLinecap="round"
@@ -550,7 +582,11 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                   </button>
                 </div>
                 {shareMessage && (
-                  <div className="absolute top-full mt-2 bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium">
+                  <div
+                    className="absolute top-full mt-2 bg-green-100 text-green-800 px-4 py-2 rounded-lg text-sm font-medium"
+                    role="status"
+                    aria-live="polite"
+                  >
                     {shareMessage}
                   </div>
                 )}
@@ -572,7 +608,15 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                 {post.tags.map((tag: string) => (
                   <span
                     key={tag}
-                    className="px-3 py-1 bg-sky-100 text-sky-700 text-sm rounded-full hover:bg-sky-200 cursor-pointer transition-colors"
+                    className="px-3 py-1 bg-sky-200 text-sky-800 text-sm rounded-full hover:bg-sky-300 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Filter by tag: ${tag}`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        // Add tag filtering logic here
+                      }
+                    }}
                   >
                     #{tag}
                   </span>
@@ -581,15 +625,21 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
             </div>
 
             {/* Comments Section */}
-            <div className="mt-12 pt-8 border-t border-gray-300">
-              <h3 className="text-xl font-bold text-gray-900 mb-6 font-heading">
+            <section
+              className="mt-12 pt-8 border-t border-gray-300"
+              aria-labelledby="comments-heading"
+            >
+              <h3
+                id="comments-heading"
+                className="text-xl font-bold text-gray-900 mb-6 font-heading"
+              >
                 Comments ({comments.length})
               </h3>
 
               {/* Comment Form */}
               <form
                 onSubmit={handleComment}
-                className="mb-8 p-6 bg-gray-50 rounded-lg comment-form"
+                className="mb-8 p-6 bg-gray-50 rounded-lg"
               >
                 <label
                   htmlFor="comment"
@@ -607,13 +657,13 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                   required
                 />
                 <div className="flex justify-between items-center mt-4">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-700">
                     Your comment will be posted as "Guest User"
                   </p>
                   <button
                     type="submit"
                     disabled={!newComment.trim()}
-                    className="px-6 py-2 bg-sky-700 hover:bg-sky-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 btn-primary"
+                    className="px-6 py-2 bg-sky-700 hover:bg-sky-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
                   >
                     Post Comment
                   </button>
@@ -631,14 +681,19 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                       <img
                         src={comment.avatar || logoMain}
                         alt={comment.author}
-                        className="w-10 h-10 rounded-full object-contain bg-gray-100 p-1 flex-shrink-0"
+                        className="w-10 h-10 rounded-full object-contain bg-gray-200 p-1 flex-shrink-0"
+                        width="40"
+                        height="40"
                       />
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-medium text-gray-900 comment-author">
+                          <h4 className="font-medium text-gray-900">
                             {comment.author}
                           </h4>
-                          <span className="text-gray-500 text-sm">
+                          <time
+                            className="text-gray-700 text-sm"
+                            dateTime={comment.timestamp}
+                          >
                             {new Date(comment.timestamp).toLocaleDateString(
                               "en-US",
                               {
@@ -649,21 +704,21 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                                 minute: "2-digit",
                               }
                             )}
-                          </span>
+                          </time>
                         </div>
-                        <p className="text-gray-700 leading-relaxed comment-content">
+                        <p className="text-gray-800 leading-relaxed">
                           {comment.content}
                         </p>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-600">
+                  <div className="text-center py-8 text-gray-700">
                     <p>No comments yet. Be the first to share your thoughts!</p>
                   </div>
                 )}
               </div>
-            </div>
+            </section>
 
             {/* Call to Action */}
             <div className="mt-12 p-8 bg-gradient-to-r from-sky-50 to-blue-50 rounded-lg border border-sky-200">
@@ -671,7 +726,7 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                 <h3 className="text-xl font-bold text-gray-900 mb-4 font-heading">
                   Need Professional Exterior Services?
                 </h3>
-                <p className="text-gray-700 mb-6 font-paragraph max-w-2xl mx-auto">
+                <p className="text-gray-800 mb-6 font-paragraph max-w-2xl mx-auto">
                   Get a free quote for pressure washing, gutter cleaning, or any
                   of our exterior services. Serving Hampton Roads, Virginia with
                   exceptional quality and customer service.
@@ -679,13 +734,13 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link
                     to="/quote"
-                    className="btn-primary inline-flex items-center justify-center px-6 py-3 text-white bg-sky-700 hover:bg-sky-800 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                    className="inline-flex items-center justify-center px-6 py-3 text-white bg-sky-700 hover:bg-sky-800 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
                   >
                     Get Free Quote
                   </Link>
                   <a
                     href="tel:+1-757-796-7240"
-                    className="btn-secondary inline-flex items-center justify-center px-6 py-3 text-sky-700 bg-white border-2 border-sky-700 hover:bg-sky-700 hover:text-white rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+                    className="inline-flex items-center justify-center px-6 py-3 text-sky-700 bg-white border-2 border-sky-700 hover:bg-sky-700 hover:text-white rounded-lg font-medium transition-all focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
                   >
                     Call (757) 796-7240
                   </a>
@@ -700,15 +755,17 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
                   className="w-16 h-16 rounded-full mr-4 object-contain bg-white p-2"
                   src={logoMain}
                   alt={post.author}
+                  width="64"
+                  height="64"
                 />
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 font-heading">
                     {post.author}
                   </h4>
-                  <p className="text-gray-600 mt-2 font-paragraph">
+                  <p className="text-gray-800 mt-2 font-paragraph">
                     {post.authorBio}
                   </p>
-                  <p className="text-sm text-gray-500 mt-2">
+                  <p className="text-sm text-gray-700 mt-2">
                     Elite Exteriors is a family-run business founded by Ahmet
                     from Turkey and Gaby from Zimbabwe, providing exceptional
                     pressure washing, gutter cleaning, and exterior services in
@@ -722,9 +779,15 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
 
         {/* Related Posts */}
         {relatedPosts.length > 0 && (
-          <aside className="py-16 bg-gray-50">
+          <aside
+            className="py-16 bg-gray-50"
+            aria-labelledby="related-posts-heading"
+          >
             <div className="px-4 mx-auto max-w-screen-xl">
-              <h2 className="mb-8 text-2xl font-bold text-gray-900 font-heading text-center">
+              <h2
+                id="related-posts-heading"
+                className="mb-8 text-2xl font-bold text-gray-900 font-heading text-center"
+              >
                 Related Articles
               </h2>
               <div className="grid gap-8 lg:grid-cols-3">
@@ -740,265 +803,4 @@ const BlogPostView: React.FC<BlogPostViewProps> = ({ post }) => {
   );
 };
 
-const BlogListingView: React.FC = () => {
-  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(blogPosts);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      if (query.trim()) {
-        const results = searchPosts(query);
-        setFilteredPosts(results);
-      } else {
-        setFilteredPosts(filterByCategory(selectedCategory));
-      }
-      setIsLoading(false);
-    }, 300);
-  };
-
-  // Handle category filter
-  const handleCategoryFilter = (category: string) => {
-    setSelectedCategory(category);
-    setIsLoading(true);
-
-    setTimeout(() => {
-      const filtered = filterByCategory(category);
-      setFilteredPosts(filtered);
-      setIsLoading(false);
-    }, 200);
-  };
-
-  const featuredPost = blogPosts[0];
-  const regularPosts = filteredPosts.slice(1);
-
-  return (
-    <>
-      <Helmet>
-        <title>Blog - Expert Tips & Insights | Elite Exteriors</title>
-        <meta
-          name="description"
-          content="Read expert tips and insights about pressure washing, gutter cleaning, and home maintenance from Elite Exteriors. Serving Hampton Roads, Virginia."
-        />
-        <meta
-          name="keywords"
-          content="pressure washing blog, home maintenance tips, gutter cleaning advice, Hampton Roads, Virginia"
-        />
-        <meta
-          property="og:title"
-          content="Elite Exteriors Blog - Expert Home Maintenance Tips"
-        />
-        <meta
-          property="og:description"
-          content="Expert tips and insights about exterior cleaning and maintenance from the professionals at Elite Exteriors."
-        />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href="https://www.elitxteriors.com/blog" />
-      </Helmet>
-
-      <main className="pt-20 pb-16 bg-gray-50 min-h-screen">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-r from-sky-600 to-blue-700 text-white py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 font-heading">
-                Elite Exteriors Blog
-              </h1>
-              <p className="text-xl mb-8 text-blue-100 font-paragraph">
-                Expert tips, insights, and guides for maintaining your
-                property's exterior
-              </p>
-
-              {/* Search Bar */}
-              <div className="max-w-md mx-auto">
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search articles..."
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    className="w-full px-4 py-3 pl-12 text-gray-900 bg-white border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
-                  />
-                  <svg
-                    className="absolute left-4 top-3.5 h-5 w-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="container mx-auto px-4 py-12">
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Main Content */}
-            <div className="lg:w-3/4">
-              {/* Category Filter */}
-              <div className="mb-8">
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => handleCategoryFilter("all")}
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                      selectedCategory === "all"
-                        ? "bg-sky-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
-                  >
-                    All Posts
-                  </button>
-                  {blogCategories.map((category) => (
-                    <button
-                      key={category.id}
-                      onClick={() => handleCategoryFilter(category.id)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        selectedCategory === category.id
-                          ? "bg-sky-600 text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
-                    >
-                      {category.name} ({category.count})
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Loading State */}
-              {isLoading && <LoadingSpinner />}
-
-              {/* Featured Post */}
-              {!isLoading &&
-                searchQuery === "" &&
-                selectedCategory === "all" && (
-                  <div className="mb-12">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
-                      Featured Article
-                    </h2>
-                    <BlogPostCard post={featuredPost} featured={true} />
-                  </div>
-                )}
-
-              {/* Regular Posts */}
-              {!isLoading && (
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-6 font-heading">
-                    {searchQuery ? "Search Results" : "Latest Articles"}
-                  </h2>
-                  <div className="grid gap-8 md:grid-cols-2">
-                    {regularPosts.map((post) => (
-                      <BlogPostCard key={post.id} post={post} />
-                    ))}
-                  </div>
-                  {regularPosts.length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-gray-600">
-                        No articles found. Try adjusting your search or filter.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <aside className="lg:w-1/4">
-              <div className="space-y-8">
-                {/* Popular Tags */}
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 font-heading">
-                    Popular Tags
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {popularTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-1 bg-sky-100 text-sky-700 text-sm rounded-full hover:bg-sky-200 cursor-pointer transition-colors"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Newsletter Signup */}
-                <div className="bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-lg border border-sky-200">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 font-heading">
-                    Stay Updated
-                  </h3>
-                  <p className="text-gray-600 mb-4 text-sm">
-                    Get the latest tips and insights delivered to your inbox.
-                  </p>
-                  <div className="space-y-3">
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-                    />
-                    <button className="w-full px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2">
-                      Subscribe
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </aside>
-          </div>
-        </div>
-      </main>
-    </>
-  );
-};
-
-const BlogPage: React.FC = () => {
-  const { slug } = useParams<{ slug: string }>();
-  const navigate = useNavigate();
-  const [currentPost, setCurrentPost] = useState<BlogPost | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (slug) {
-      const post = blogPosts.find((p: BlogPost) => p.slug === slug);
-      if (post) {
-        setCurrentPost(post);
-      } else {
-        navigate("/blog", { replace: true });
-      }
-    } else {
-      setCurrentPost(null);
-    }
-    setIsLoading(false);
-  }, [slug, navigate]);
-
-  if (isLoading) {
-    return (
-      <>
-        <Navbar />
-        <LoadingSpinner />
-        <Footer />
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Navbar />
-      {currentPost ? <BlogPostView post={currentPost} /> : <BlogListingView />}
-      <Footer />
-    </>
-  );
-};
-
-export default BlogPage;
+export default BlogPostView;
